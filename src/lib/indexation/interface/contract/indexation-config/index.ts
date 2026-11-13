@@ -11,6 +11,8 @@ export interface IndexationConfig {
   rootClusters: string[];
   /** Non-cluster folders allowed at a domain root, never exported. */
   serviceFolders: string[];
+  /** Strict SAMO: domain folders that are not root clusters stay out of barrels. */
+  clustersOnly: boolean;
   /** Filters of each generation mode; `full` and `package` are built in. */
   modes: Record<string, IndexationMode>;
   /** Label of the barrel header `/** AREA: <marker> -> AUTO-GENERATED *\/`. */
@@ -19,6 +21,8 @@ export interface IndexationConfig {
   retiredMarkers: string[];
   /** Diagnostics directory; absolute once loaded. */
   outDir: string;
+  /** Folders never re-exported: `name` anywhere or `parent/path/name`. */
+  skipFolders: string[];
   /** Domains whose SVG folders get glob constants and name lists. */
   svgDomains: string[];
   /** Component name prefix per domain, e.g. `{ "html": "Html" }`. */

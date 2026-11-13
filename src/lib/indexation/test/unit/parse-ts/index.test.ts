@@ -66,10 +66,10 @@ test('declarations', () => {
   assert.deepEqual(exports.type, [{ name: 'Size', assign: "T | 'lg'" }]);
   assert.deepEqual(exports.interface, [
     { name: 'IProps', assign: '{ size: Size; nested: { x: 1 } }' },
-    { name: 'Kind', assign: "{ A = 'a', B = 'b' }" },
-    { name: 'Flag', assign: '{ On, Off }' },
   ]);
   assert.deepEqual(exports.default, [
+    { name: 'Kind', from: 'enum' },
+    { name: 'Flag', from: 'enum' },
     { name: 'Manager', from: 'class' },
     { name: 'Base', from: 'class' },
     { name: 'make', from: 'function' },

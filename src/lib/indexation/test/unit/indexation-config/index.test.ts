@@ -160,6 +160,41 @@ test('custom source root, marker and output directory', () => {
   assert.ok(!fs.existsSync(path.join(root, '.stylist-indexation')));
 });
 
+test('skipFolders leave folders out of barrels by name or by parent path', () => {
+  const root = fixture();
+  write(
+    root,
+    'stylist-indexation.config.json',
+    JSON.stringify({ skipFolders: ['shader', 'theme/legacy'] }),
+  );
+  write(root, 'src/lib/theme/current/index.ts', 'export const CURRENT = 1;\n');
+  write(root, 'src/lib/theme/legacy/index.ts', 'export const OLD = 1;\n');
+  write(root, 'src/lib/other/legacy/index.ts', 'export const KEPT = 1;\n');
+  write(root, 'src/lib/webgl/shader/index.ts', 'export const SHADER = 1;\n');
+  write(root, 'src/lib/webgl/scene/index.ts', 'export const SCENE = 1;\n');
+  assert.equal(IndexationCli.main([], root), 0);
+  const index = fs.readFileSync(path.join(root, 'src/lib/index.ts'), 'utf8');
+  assert.match(index, /CURRENT/);
+  assert.match(index, /KEPT/);
+  assert.match(index, /SCENE/);
+  assert.doesNotMatch(index, /OLD|SHADER/);
+});
+
+test('enums are re-exported as values, interfaces and aliases as types', () => {
+  const root = fixture();
+  write(
+    root,
+    'src/lib/model/user/index.ts',
+    "export enum Role { Admin = 'admin' }\nexport interface User { role: Role }\nexport type UserId = string;\n",
+  );
+  write(root, 'src/lib/view/card/index.ts', 'export const CARD = 1;\n');
+  assert.equal(IndexationCli.main([], root), 0);
+  const index = fs.readFileSync(path.join(root, 'src/lib/index.ts'), 'utf8');
+  assert.match(index, /export \{ Role \} from '\.\/model';/);
+  assert.match(index, /export type \{ User \} from '\.\/model';/);
+  assert.match(index, /export type \{ UserId \} from '\.\/model';/);
+});
+
 test('regeneration keeps the line endings of an existing barrel', () => {
   const root = fixture();
   write(root, 'src/lib/utils/format.ts', 'export const PRICE = 1;\n');

@@ -58,6 +58,9 @@ flowchart TD
   `index.full.ts`; a partial module selection never touches the full root.
   Internal domain barrels always stay complete. A source root whose folders are
   root clusters (`rootClusters`, plus `serviceFolders`) is a single domain.
+- Inside a domain the mode filters root clusters; other folders are plain
+  modules unless `clustersOnly` is set. `serviceFolders` and `skipFolders` are
+  never re-exported.
 - Missing barrels are computed bottom-up in memory, so a new `class/index.ts`
   reaches the root barrel in the same pass.
 - The generated block starts with `/** AREA: <marker> -> AUTO-GENERATED */`.
@@ -70,7 +73,10 @@ flowchart TD
 - Folders of `svgDomains` get glob constants and name lists of their SVG files.
 - Unchanged content (CRLF/LF normalized) is not rewritten; a rewritten barrel
   keeps its line endings, new files use LF.
-- Exports and imports are read with the TypeScript compiler API (`TsAstParser`).
+- Exports and imports are read with the TypeScript compiler API (`TsAstParser`);
+  enums are values, interfaces and type aliases are re-exported as types.
+- A child folder whose build has no exports is re-exported by the names its
+  own `index.ts` declares (a hand-written entry module).
 
 ## Clusters
 

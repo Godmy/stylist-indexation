@@ -129,6 +129,11 @@ export class IndexationConfigRepository {
       )
         fail(`"${key}" must map names to strings`);
     };
+    if (
+      data.clustersOnly !== undefined &&
+      typeof data.clustersOnly !== 'boolean'
+    )
+      fail('"clustersOnly" must be true or false');
     for (const key of ['extends', 'sourceRoot', 'marker', 'outDir'])
       if (data[key] !== undefined && typeof data[key] !== 'string')
         fail(`"${key}" must be a string`);
@@ -145,6 +150,7 @@ export class IndexationConfigRepository {
       'rootClusters',
       'serviceFolders',
       'retiredMarkers',
+      'skipFolders',
       'svgDomains',
       'aliases',
     ])

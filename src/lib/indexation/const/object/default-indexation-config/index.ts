@@ -14,6 +14,7 @@ export const DEFAULT_INDEXATION_CONFIG: IndexationConfig = {
     'type',
   ],
   serviceFolders: ['server', 'test'],
+  clustersOnly: false,
   modes: {
     full: {
       excludedRootDomains: ['server'],
@@ -35,6 +36,7 @@ export const DEFAULT_INDEXATION_CONFIG: IndexationConfig = {
   marker: 'STYLIST CODER MODEL',
   retiredMarkers: [],
   outDir: '.stylist-indexation',
+  skipFolders: [],
   svgDomains: [],
   componentPrefixes: {},
   componentNames: {},

@@ -68,20 +68,8 @@ export class IndexStructureBuilder {
 
       for (const child of children) {
         const childName = child.name ?? '';
-        const normalizedNodePath = nodePath.replace(/\\/g, '/');
 
-        if (
-          childName === 'legacy' &&
-          normalizedNodePath.endsWith('/design-system/presets')
-        )
-          continue;
-        if (
-          childName === 'compat' &&
-          normalizedNodePath.endsWith('/design-system')
-        )
-          continue;
-        if (childName === 'shader' && normalizedNodePath.includes('/data'))
-          continue;
+        if (IndexationSettings.isSkippedFolder(nodePath, childName)) continue;
         if (
           GenerationModeRegistry.shouldSkipRootChildExport(
             node.architecture_path ?? nodePath,
@@ -119,14 +107,17 @@ export class IndexStructureBuilder {
           const indexEntry =
             childTs.find((ts) => ts.read?.file === 'index.ts') ?? childTs[0];
           const buildData = indexEntry?.build ?? {};
-          // An empty build exports object falls back to the read exports.
-          // JS: `{} ?? fallback` keeps {} — must check explicitly
+          // Build exports without any entry fall back to the exports the
+          // child's own index.ts declares (a hand-written entry module).
           const rawBuildExports = buildData.exports as
             Record<string, ExportEntry[]> | undefined;
           const rawReadExports = indexEntry?.read?.exports as
             Record<string, ExportEntry[]> | undefined;
           const childExportsData =
-            rawBuildExports && Object.keys(rawBuildExports).length > 0
+            rawBuildExports &&
+            Object.values(rawBuildExports).some(
+              (entries) => Array.isArray(entries) && entries.length > 0,
+            )
               ? rawBuildExports
               : (rawReadExports ?? {});
 
@@ -209,7 +200,7 @@ export class IndexStructureBuilder {
             exportsTransit.push({ from: childExportFrom(child, childName) });
           }
         } else if ((child.children ?? []).length > 0) {
-          if (childName === 'shader') continue;
+          if (IndexationSettings.isSkippedFolder(nodePath, childName)) continue;
           const childChildren = child.children ?? [];
           const recursiveExports =
             IndexStructureBuilder.collectExportsFromChildren(
@@ -578,7 +569,13 @@ export class IndexStructureBuilder {
 
     for (const child of children) {
       const childNodeName = child.name ?? '';
-      if (childNodeName === 'shader') continue;
+      if (
+        IndexationSettings.isSkippedFolder(
+          path.dirname(child.path ?? ''),
+          childNodeName,
+        )
+      )
+        continue;
 
       const childSvelte = child.svelte ?? [];
       const childTs = (child.ts ?? []).filter(

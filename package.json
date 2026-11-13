@@ -1,10 +1,14 @@
 {
   "name": "stylist-indexation",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "description": "Barrel generator and export/dependency indexer for TypeScript and Svelte",
   "license": "MIT",
+  "author": "Godmy",
+  "homepage": "https://github.com/Godmy/stylist-indexation#readme",
+  "bugs": {
+    "url": "https://github.com/Godmy/stylist-indexation/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Godmy/stylist-indexation.git"
@@ -12,6 +16,7 @@
   "keywords": [
     "typescript",
     "svelte",
+    "sveltekit",
     "barrel",
     "index",
     "codegen",
@@ -19,25 +24,38 @@
     "dependency-graph"
   ],
   "engines": {
-    "node": ">=24.11.0"
+    "node": ">=22"
   },
   "bin": {
-    "stylist-indexation": "scripts/indexation.mjs"
+    "stylist-indexation": "bin/stylist-indexation.js"
   },
   "exports": {
-    "./*": "./src/lib/indexation/*/index.ts"
+    ".": {
+      "types": "./dist/class/facade/indexation-cli/index.d.ts",
+      "default": "./dist/class/facade/indexation-cli/index.js"
+    },
+    "./package.json": "./package.json",
+    "./*": {
+      "types": "./dist/*/index.d.ts",
+      "default": "./dist/*/index.js"
+    }
   },
   "files": [
-    "scripts/indexation.mjs",
+    "bin",
+    "dist",
     "src/lib/indexation",
-    "!src/lib/indexation/test"
+    "!src/lib/indexation/test",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "indexation": "node scripts/indexation.mjs",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "check": "tsc --noEmit",
     "test": "vitest run --pool=threads",
-    "format": "prettier --write src scripts package.json tsconfig.json AGENTS.md README.md .github .prettierrc.json",
-    "format:check": "prettier --check src scripts package.json tsconfig.json AGENTS.md README.md .github .prettierrc.json"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check && npm test",
+    "format": "prettier --write src scripts bin package.json tsconfig.json tsconfig.build.json AGENTS.md README.md CHANGELOG.md RELEASING.md .github .prettierrc.json",
+    "format:check": "prettier --check src scripts bin package.json tsconfig.json tsconfig.build.json AGENTS.md README.md CHANGELOG.md RELEASING.md .github .prettierrc.json"
   },
   "dependencies": {
     "typescript": "^5.9.0"

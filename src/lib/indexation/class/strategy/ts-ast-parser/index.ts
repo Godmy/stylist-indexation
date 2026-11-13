@@ -100,14 +100,8 @@ export class TsAstParser implements TsParser {
             ),
           });
       } else if (ts.isEnumDeclaration(statement)) {
-        push('interface', {
-          name: statement.name.text,
-          assign: TsAstParser.blockText(
-            content,
-            statement.members,
-            statement.end,
-          ),
-        });
+        // Enums are runtime values: re-exported by value, never as types.
+        push('default', { name: statement.name.text, from: 'enum' });
       } else if (
         ts.isClassDeclaration(statement) ||
         ts.isFunctionDeclaration(statement)
@@ -299,11 +293,10 @@ export class TsAstParser implements TsParser {
     for (const statement of source.statements) {
       if (ts.isTypeAliasDeclaration(statement)) {
         buckets.set(statement.name.text, 'type');
-      } else if (
-        ts.isInterfaceDeclaration(statement) ||
-        ts.isEnumDeclaration(statement)
-      ) {
+      } else if (ts.isInterfaceDeclaration(statement)) {
         buckets.set(statement.name.text, 'interface');
+      } else if (ts.isEnumDeclaration(statement)) {
+        buckets.set(statement.name.text, 'default');
       } else if (
         (ts.isClassDeclaration(statement) ||
           ts.isFunctionDeclaration(statement) ||

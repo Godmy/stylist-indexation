@@ -37,6 +37,7 @@ const stylistSettings = {
   componentPrefixes: { html: 'Html' },
   componentNames: { 'html/node': 'HtmlNodeRenderer' },
   retiredMarkers: ['LANKATOUR LIB INDEX'],
+  clustersOnly: true,
 };
 function configure(root: string, config: object): void {
   write(root, 'stylist-indexation.config.json', JSON.stringify(config));

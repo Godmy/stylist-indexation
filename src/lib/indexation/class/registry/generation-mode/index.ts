@@ -66,6 +66,10 @@ export class GenerationModeRegistry {
     if (!GenerationModeRegistry.isDomainRootPath(nodePath, generationConfig)) {
       return false;
     }
+    if (IndexationSettings.isServiceFolder(childName)) return true;
+    // Other non-cluster folders are plain modules unless `clustersOnly` is set.
+    if (!IndexationSettings.isRootCluster(childName))
+      return IndexationSettings.config.clustersOnly;
     return !GenerationModeRegistry.getIncludedRootClusters(
       generationConfig,
     ).has(childName);

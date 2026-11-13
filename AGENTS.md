@@ -17,8 +17,12 @@ the sibling `stylist-svelte/AGENTS.md`:
 - Vitest suites belong in `test/unit/<family>/index.test.ts`, export nothing, use
   synthetic sources in a temporary directory and are never imported by production code.
 - `scripts/indexation.mjs` only launches `IndexationCli`.
-- No build step: Node.js >=24.11 executes TypeScript. The only runtime dependency
-  is `typescript` (`TsAstParser`).
+- Sources run directly on Node.js >=24.11 (`scripts/indexation.mjs`); the npm
+  package ships `dist/` built by `npm run build` (`tsconfig.build.json`,
+  `rewriteRelativeImportExtensions`) and runs on Node.js >=22 through
+  `bin/stylist-indexation.js`. The only runtime dependency is `typescript`.
+- Keep relative imports with the `.ts` extension; the build rewrites them.
+- Releases follow [RELEASING.md](RELEASING.md); publishing is Dmitrii's step.
 
 Project knowledge never goes into code: project lists, domain names, naming
 rules, markers and paths belong in `stylist-indexation.config.json`

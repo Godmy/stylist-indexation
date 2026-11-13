@@ -42,4 +42,17 @@ export class IndexationSettings {
   static isServiceFolder(name: string): boolean {
     return IndexationSettings.current.serviceFolders.includes(name);
   }
+
+  /**
+   * `skipFolders` match: `name` skips that folder everywhere,
+   * `parent/path/name` only below a parent path ending with `parent/path`.
+   */
+  static isSkippedFolder(parentPath: string, name: string): boolean {
+    const parent = parentPath.replace(/\\/g, '/').replace(/\/+$/, '');
+    return IndexationSettings.current.skipFolders.some((pattern) => {
+      const parts = pattern.split('/').filter(Boolean);
+      if (parts.pop() !== name) return false;
+      return !parts.length || parent.endsWith('/' + parts.join('/'));
+    });
+  }
 }
