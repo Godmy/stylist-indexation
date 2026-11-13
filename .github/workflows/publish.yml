@@ -1,12 +1,14 @@
-name: Publish
+# Stages a GitHub release on npm. Nothing becomes installable until a
+# maintainer approves the staged version with 2FA (see RELEASING.md).
+name: Stage release
 on:
   release:
     types: [published]
 permissions:
   contents: read
-  id-token: write
+  id-token: write # trusted publishing (OIDC): no npm token is stored
 jobs:
-  publish:
+  stage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,9 +16,11 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-          cache: npm
+          # No dependency cache in release builds.
+      # npm stage needs npm 11.15+; trusted publishing adds provenance.
+      - run: npm install --global npm@11
       - run: npm ci
-      # prepublishOnly runs check and tests, prepack builds dist/.
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm run check
+      - run: npm test
+      # prepack builds dist/ into the staged tarball.
+      - run: npm stage publish

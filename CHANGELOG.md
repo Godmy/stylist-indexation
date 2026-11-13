@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-11-13
+
+- Releases go through npm staged publishing: the GitHub release workflow
+  stages the version with trusted publishing (OIDC, no npm token) and a
+  maintainer approves it with 2FA. See `RELEASING.md`.
+- No changes to the generator.
+
 ## 1.0.0 — 2026-11-13
 
 First public release.

@@ -1,6 +1,6 @@
 {
   "name": "stylist-indexation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Barrel generator and export/dependency indexer for TypeScript and Svelte",
   "license": "MIT",

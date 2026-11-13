@@ -1,32 +1,42 @@
 # Releasing
 
-Checklist for publishing `stylist-indexation` to npm and GitHub.
+Checklist for publishing `stylist-indexation` to npm through GitHub and npm
+[staged publishing](https://docs.npmjs.com/staged-publishing/): GitHub builds
+and stages the release, a maintainer approves it with 2FA, and only then it
+becomes installable.
 
 ```mermaid
 flowchart LR
   a["1. Checks"] --> b["2. Version + CHANGELOG"]
   b --> c["3. Pack and try"]
-  c --> d["4. Commit, tag, push"]
-  d --> e{"publish"}
-  e -- by hand --> f["5a. npm publish"]
-  e -- by GitHub --> g["5b. GitHub release<br/>workflow publishes"]
-  f --> h["6. Verify on npm"]
-  g --> h
+  c --> d["4. Push commit and tag"]
+  d --> e["5. GitHub release"]
+  e --> f["Stage release workflow<br/>check, test, build<br/>npm stage publish"]
+  f --> g["6. Approve with 2FA<br/>npmjs.com or npm stage approve"]
+  g --> h["7. Verify on npm"]
 ```
 
 ## One-time setup
 
-1. npm account with two-factor authentication: <https://www.npmjs.com/signup>.
-2. Log in on this machine: `npm login`, check with `npm whoami`.
-3. Publish the very first version by hand (step 5a): a granular token can be
-   limited to a package only after the package exists.
-4. For releases from GitHub (step 5b): create an npm **automation** access
-   token (npmjs.com → Access Tokens → Generate New Token → Granular, read and
-   write for `stylist-indexation`) and save it in the repository as the secret
-   `NPM_TOKEN` (GitHub → Settings → Secrets and variables → Actions). Instead
-   of a token you can configure npm _trusted publishing_ for the repository
-   and the `publish.yml` workflow.
-5. The repository must be public for `--provenance`.
+1. npm account with two-factor authentication, maintainer of
+   `stylist-indexation`.
+2. npm CLI 11.15 or newer on this machine for `npm stage` commands:
+   `npm install --global npm@11`, check with `npm -v`. (npm 12 needs
+   Node.js 22.22.2+ or 24.15+.) Then `npm login`, check with `npm whoami`.
+3. Trusted publisher on npmjs.com: package `stylist-indexation` → **Settings**
+   → **Trusted Publisher** → **GitHub Actions**:
+   - Organization or user: `Godmy`
+   - Repository: `stylist-indexation`
+   - Workflow filename: `publish.yml`
+   - Environment: leave empty
+   - **Allowed actions**: keep only staged publishing (`npm stage publish` is
+     always allowed); do not allow direct `npm publish`.
+
+   No npm token is stored in GitHub; delete an old `NPM_TOKEN` secret if
+   there is one.
+
+4. Recommended: package **Settings** → **Publishing access** → _Require
+   two-factor authentication and disallow tokens_.
 
 ## Every release
 
@@ -42,13 +52,11 @@ flowchart LR
    ```
 
 2. **Version** — move the `## x.y.z — unreleased` heading of `CHANGELOG.md` to
-   the release date, then:
+   the release date, commit it, then:
 
    ```bash
    npm version patch   # or minor / major; creates a commit and a vX.Y.Z tag
    ```
-
-   The first release, `1.0.0`, was tagged `v1.0.0` by hand.
 
 3. **Pack and try**:
 
@@ -67,23 +75,46 @@ flowchart LR
    git push --tags
    ```
 
-5. **Publish** — one of:
+5. **GitHub release** — GitHub → **Releases** → **Draft a new release** →
+   choose the `vX.Y.Z` tag → paste the changelog section → **Publish
+   release**. The **Stage release** workflow (`publish.yml`) checks, tests,
+   builds and runs `npm stage publish`; provenance is added automatically.
+   Watch it under **Actions**.
 
-   - **a. By hand**: `npm publish` (runs check, tests and build through
-     `prepublishOnly` / `prepack`; npm asks for the 2FA code).
-   - **b. From GitHub**: GitHub → Releases → Draft a new release → choose the
-     tag → paste the changelog section → Publish. The `Publish` workflow runs
-     `npm publish --provenance --access public`.
+6. **Approve** — after the workflow succeeds and npm finishes its automated
+   validation:
 
-6. **Verify**:
+   - **npmjs.com**: **Staged Packages** tab → review `stylist-indexation@x.y.z`
+     → **Approve** → 2FA.
+   - **or the CLI**:
+
+     ```bash
+     npm stage list stylist-indexation
+     npm stage view <stage-id>          # optional review
+     npm stage download <stage-id>      # optional: inspect the tarball
+     npm stage approve <stage-id>       # asks for 2FA
+     ```
+
+   A staged version that should not ship is rejected on npmjs.com; fix it and
+   release the next patch version.
+
+7. **Verify**:
 
    ```bash
    npm view stylist-indexation version
    npx stylist-indexation@latest --help
    ```
 
+## Without GitHub
+
+If the workflow is unavailable, stage from a clean checkout of the tag:
+`npm stage publish` (builds through `prepack`), then approve as in step 6.
+Direct `npm publish` also works while the package allows it.
+
 ## If something goes wrong
 
+- A failed workflow stages nothing: fix, move the tag only if the release was
+  never approved, or release the next patch version.
 - A broken version can be deprecated, not reused:
   `npm deprecate stylist-indexation@x.y.z "reason"`, then release a fix.
 - `npm unpublish` works only within 72 hours and blocks the version number
