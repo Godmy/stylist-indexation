@@ -1,0 +1,50 @@
+{
+  "name": "stylist-indexation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Barrel generator and export/dependency indexer for TypeScript and Svelte",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Godmy/stylist-indexation.git"
+  },
+  "keywords": [
+    "typescript",
+    "svelte",
+    "barrel",
+    "index",
+    "codegen",
+    "exports",
+    "dependency-graph"
+  ],
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "bin": {
+    "stylist-indexation": "scripts/indexation.mjs"
+  },
+  "exports": {
+    "./*": "./src/lib/indexation/*/index.ts"
+  },
+  "files": [
+    "scripts/indexation.mjs",
+    "src/lib/indexation",
+    "!src/lib/indexation/test"
+  ],
+  "scripts": {
+    "indexation": "node scripts/indexation.mjs",
+    "check": "tsc --noEmit",
+    "test": "vitest run --pool=threads",
+    "format": "prettier --write src scripts package.json tsconfig.json AGENTS.md README.md .github .prettierrc.json",
+    "format:check": "prettier --check src scripts package.json tsconfig.json AGENTS.md README.md .github .prettierrc.json"
+  },
+  "dependencies": {
+    "typescript": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "prettier": "^3.9.10",
+    "vitest": "^5.0.3"
+  }
+}
